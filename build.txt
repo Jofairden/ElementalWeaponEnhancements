@@ -1,0 +1,8 @@
+author = gorateron
+version = 0.0.1
+displayName = Elemental Weapon Enhancements
+hideCode = false
+hideResources = false
+includeSource = true
+buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*, .git\*, Properties\*, *.sln, *.csproj, LICENSE, .gitignore
+includePDB = true

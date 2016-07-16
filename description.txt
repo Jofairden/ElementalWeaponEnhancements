@@ -1,0 +1,20 @@
+Version: 0.0.1
+
+This mod adds all four elements as an additional weapon type to any weapon! (earth, water, air and fire)
+For now, extra weapon damage is always added.
+This mod is an experiment, let me know on the forum if you like it.
+The items 'Element Shifter' and 'Chronic Shifter' can be bought from the Merchant after having beaten the Brain of Cthulhu or Eater of Worlds for 5 gold.
+Right clicking the Element Shifter will rese the element type of the item first on your hotbar randomly.
+Right clicking the Chronic Shifter will reset the elemental damage of the item first on your hotbar randomly.
+If you want to see how this mod is made, you can get all files by reading it with tModReader or you can see the sourcecode at github.com/gorateron/ElementalWeaponEnhancements
+
+Each element has its own elemental modifier, similar to vanilla damage modifiers.
+Currently, this mod has no items of its own that alter these modifiers, but you can do so yourself.
+To access the mod player data, use the following:
+ElementalWeaponEnhancements.ElementalPlayer modPlayer = (ElementalWeaponEnhancements.ElementalPlayer)player.GetModPlayer(ModLoader.GetMod("ElementalWeaponEnhancements"), "ElementalPlayer");
+Make sure you have the seperate .dll file as reference when using Visual Studio, download it via the thread
+Then you can access the modifiers like so:
+modPlayer.elementalDamage[index]
+The indexes are as follows: 1. earth, 2. water, 3. air, 4. fire
+These modifiers work just like regular modifiers, they default to 1f and can be modified to your likings (with accessories for example)
+See thread for more examples.
