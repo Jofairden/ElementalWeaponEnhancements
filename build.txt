@@ -1,9 +1,9 @@
 author = gorateron
-version = 0.0.2
+version = 0.0.3
 homepage = http://forums.terraria.org/index.php?threads/elemental-weapon-enhancements.46677/
 displayName = Elemental Weapon Enhancements
 hideCode = false
 hideResources = false
 includeSource = true
-buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*, .git\*, Properties\*, *.sln, *.csproj, LICENSE, .gitignore
+buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*, .git\*, Properties\*, *.sln, *.csproj, LICENSE, .gitignore, *.tmod, *.TMOD
 includePDB = true

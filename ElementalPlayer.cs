@@ -12,72 +12,22 @@ namespace ElementalWeaponEnhancements
 {
     class ElementalPlayer : ModPlayer
     {
-        public float[] elementalDamage =
-        {
-            1f, // no element
-            1f,
-            1f,
-            1f,
-            1f
-        };
+        public List<float> elementDamage;
 
-        public float[] customModifierValue =
+        // Copy element modifiers
+        public override void Initialize()
         {
-            0f,
-            0f,
-            0f,
-            0f,
-            0f
-        };
-
-        public bool[] customModifiers =
-        {
-            false,
-            false,
-            false,
-            false,
-            false
-        };
-
+            elementDamage = new List<float>(ElementalWeaponEnhancements.elementModifiers);
+        }
+        
+        // Reset modifiers to default
         public override void ResetEffects()
         {
-            for (int i = 0; i < elementalDamage.Length; i++)
+            if (elementDamage.Any())
             {
-                elementalDamage[i] = 1f;
-            }
-            for (int i = 0; i < customModifierValue.Length; i++)
-            {
-                customModifierValue[i] = 0f;
-            }
-            for (int i = 0; i < customModifiers.Length; i++)
-            {
-                customModifiers[i] = false;
-            }
-        }
-
-        public override void UpdateDead()
-        {
-            for (int i = 0; i < elementalDamage.Length; i++)
-            {
-                elementalDamage[i] = 1f;
-            }
-            for (int i = 0; i < customModifierValue.Length; i++)
-            {
-                customModifierValue[i] = 0f;
-            }
-            for (int i = 0; i < customModifiers.Length; i++)
-            {
-                customModifiers[i] = false;
-            }
-        }
-
-        public override void PostUpdateEquips()
-        {
-            for (int i = 0; i < customModifiers.Length; i++)
-            {
-                if (customModifiers[i])
+                for (int i = 0; i < elementDamage.Count; i++)
                 {
-                    elementalDamage[i] += customModifierValue[i];
+                    elementDamage[i] = 1f;
                 }
             }
         }

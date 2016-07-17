@@ -32,11 +32,15 @@ namespace ElementalWeaponEnhancements.Items
         {
             item.stack = 2;
 
-            ElementalInfo info = player.inventory[0].GetModInfo<ElementalInfo>(mod);
-
-            if (player.inventory[0].type != 0 && info.enhanced)
+            // If the first item in the inventory is an actual item, calculate new damage
+            if (player.inventory[0].type > 0)
             {
-                info.RollPrimaryDamage();
+                ElementalInfo info = player.inventory[0].GetModInfo<ElementalInfo>(mod);
+
+                if (info.enhanced)
+                {
+                    info.CalculateNewDamage();
+                }
             }
         }
     }

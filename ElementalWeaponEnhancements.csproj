@@ -68,7 +68,6 @@
     <Compile Include="ElementalPlayer.cs" />
     <Compile Include="ElementalWeaponEnhancements.cs" />
     <Compile Include="ElementalInfo.cs" />
-    <Compile Include="ElementalWorld.cs" />
     <Compile Include="Items\ChronicShifter.cs" />
     <Compile Include="Items\ElementShifter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

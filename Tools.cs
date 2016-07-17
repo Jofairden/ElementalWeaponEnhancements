@@ -16,25 +16,5 @@ namespace ElementalWeaponEnhancements
         {
             return (item.damage > 0 && (item.melee || item.ranged || item.magic || item.thrown || item.summon));
         }
-
-        public static bool HasCheatSheet()
-        {
-            return (ModLoader.GetMod("CheatSheet") != null);
-        }
-
-        public static bool HasHerosMod()
-        {
-            return (ModLoader.GetMod("HEROsMod") != null);
-        }
-
-        public static Mod GetCheatSheet()
-        {
-            return (HasCheatSheet()) ? ModLoader.GetMod("CheatSheet") : null;
-        }
-
-        public static Mod GetHerosMod()
-        {
-            return (HasCheatSheet()) ? ModLoader.GetMod("HEROsMod") : null;
-        }
     }
 }

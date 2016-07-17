@@ -13,74 +13,63 @@ namespace ElementalWeaponEnhancements
 {
     class ElementalInfo : ItemInfo
     {
-        public enum ElementalType
+        // Elemental Variables
+        public bool enhanced { get; private set; }
+        public bool justDropped = true;
+        public int elementalType { get; private set; }
+        public int elementalDamage { get; private set; }
+        public Item elementalItem { get; private set; }
+
+        // Set elemental properties
+        public void SetProperties(bool enabled, int type, int damage, Item item)
         {
-            Normal,
-            Earth,
-            Water,
-            Air,
-            Fire
+            enhanced = enabled;
+            elementalType = type;
+            elementalDamage = damage;
+            elementalItem = item;
+            justDropped = false;
         }
 
-        public Color?[] ElementalColor =
+        public void ResetProperties()
         {
-            null,
-            Color.Sienna,
-            Color.DodgerBlue,
-            Color.Cyan,
-            Color.Crimson
-        };
-
-        public bool enhanced = false;
-        public int damage = 0;
-        private int _trueDamage = 0;
-        public ElementalType type { get; private set; }
-        public Item elementItem;
-
-        public void SetPrimaryType(ElementalType setType)
-        {
-            type = setType;
+            enhanced = false;
+            elementalType = 0;
+            elementalDamage = 0;
+            elementalItem = null;
         }
 
-        public int GetDamage(Player player)
+        // Get a real damage value, calculated with a player's elemental modifier
+        public int GetRealDamage(Player player)
         {
-            _trueDamage = (int)(Math.Ceiling(damage * player.GetModPlayer<ElementalPlayer>(mod).elementalDamage[(int)type]));
-            return _trueDamage;
+            return (int)Math.Ceiling((elementalDamage * player.GetModPlayer<ElementalPlayer>(mod).elementDamage[elementalType]));
         }
 
-        public void RollForItem(Item item, bool ignoreCheck = false)
+        // Calculate a damage value
+        public int CalculateDamage(ref int refDamage)
         {
-            if (ignoreCheck || Main.rand.Next(5) == 0)
+            return (int)(Main.rand.Next((int)Math.Ceiling(refDamage * 0.10f), (int)Math.Ceiling(refDamage * 0.50f)));
+        }
+
+        public void CalculateNewDamage()
+        {
+            elementalDamage = CalculateDamage(ref elementalItem.damage);
+        }
+
+        // Calculate a new element. The element can not be the element it was prior to changing it.
+        public void CalculateNewElement()
+        {
+            var elementList = ElementalWeaponEnhancements.elementData.ToList();
+            elementList.Remove(ElementalWeaponEnhancements.elementData[elementalType]);
+            if (elementList.Any())
             {
-                CreateNewItem(item);
+                int random = Main.rand.Next(0, (int)elementList.Count);
+                //The zero-based index of the first occurrence of item within the entire List<T>, if found; otherwise, –1.
+                int newElement = ElementalWeaponEnhancements.elementData.FindIndex(x => x.Item3 == elementList[random].Item3);
+                if (newElement != -1)
+                {
+                    elementalType = newElement;
+                }
             }
-        }
-
-        public void RollPrimaryElement()
-        {
-            List<ElementalType> elements = new List<ElementalType>(Enum.GetValues(typeof(ElementalType)).Cast<ElementalType>().ToList());
-            elements.Remove(ElementalType.Normal);
-            elements.Remove(type);
-            SetPrimaryType(elements[Main.rand.Next(elements.Count)]);
-        }
-
-        public void RollPrimaryDamage()
-        {
-            damage = Math.Max(1, Main.rand.Next((int)Math.Ceiling(elementItem.damage * 0.10f), (int)Math.Ceiling(elementItem.damage * .50f)));
-        }
-
-        private void CreateNewItem(Item item)
-        {
-            enhanced = true;
-            SetPrimaryType((ElementalType)Main.rand.Next(1, Enum.GetNames(typeof(ElementalType)).Length));
-            RollPrimaryDamage();
-        }
-
-        public void SetItem(ElementalType type, int damage)
-        {
-            enhanced = true;
-            SetPrimaryType(type);
-            this.damage = damage;
         }
     }
 }

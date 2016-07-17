@@ -1,13 +1,8 @@
-Version: 0.0.2
-Changes: edited description to be correct
+Version: 0.0.3
+Changes: new framework, now supports custom elements and modifiers.
+See thread (homepage) on how to add your own elements (+modifiers), and change modifiers!
 
-This mod adds all four elements as an additional weapon type to any weapon! (earth, water, air and fire) For now, extra weapon damage is always added. This mod is an experiment, let me know on the forum if you like it. The items 'Element Shifter' and 'Chronic Shifter' can be bought from the Merchant after having beaten the Brain of Cthulhu or Eater of Worlds for 5 gold.
-Right clicking the Element Shifter will reset the element type of the item first on your hotbar randomly. Right clicking the Chronic Shifter will reset the elemental damage of the item first on your hotbar randomly.
+This mod adds all four elements as an additional weapon type to any weapon! (earth, water, air and fire) There's a 25% chance to obtain an element when an item is picked up for the first time. This means you can drop items you already own once for a chance. If you do not succeed getting one, each reforge also has a 25% chance to obtain an element. The items 'Element Shifter' and 'Chronic Shifter' can be bought from the Merchant after having beaten the Brain of Cthulhu or Eater of Worlds for 5 gold. Right clicking the Element Shifter will reset the element type of the first item on your hotbar randomly. Right clicking the Chronic Shifter will reset the elemental damage of the first item on your hotbar randomly. Selected element types are completely random and you have the same chance of getting any of them. Additional damage can range from 10% to 50% of the item's damage, increased element modifiers can boost this value.
 
 If you want to see how this mod is made, you can get all files by reading it with tModReader or you can see the sourcecode at github.com/gorateron/ElementalWeaponEnhancements
-
-Each element has its own elemental modifier, similar to vanilla damage modifiers.
-Currently, this mod has no items of its own that alter these modifiers, but you can do so yourself.
-The indexes are as follows: 1. earth, 2. water, 3. air, 4. fire
-These modifiers work just like regular modifiers, they default to 1f and can be modified to your likings (with accessories for example)
-See the thread to know how to change these modifiers.
+See thread (homepage) on how to add your own elements (+modifiers), and change modifiers!

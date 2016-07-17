@@ -12,6 +12,7 @@ namespace ElementalWeaponEnhancements
 {
     class ElementalNPC : GlobalNPC
     {
+        // Add our items to the merchant
         public override void SetupShop(int type, Chest shop, ref int nextSlot)
         {
             if (type == NPCID.Merchant && NPC.downedBoss2)
@@ -22,5 +23,6 @@ namespace ElementalWeaponEnhancements
                 nextSlot++;
             }
         }
+
     }
 }
