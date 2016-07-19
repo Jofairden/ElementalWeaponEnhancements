@@ -49,6 +49,7 @@ namespace ElementalWeaponEnhancements
             int type = reader.ReadInt32();
             int damage = reader.ReadInt32();
             string modName = reader.ReadString();
+            // If the mod that added the element is null, reset the element
             if (ModLoader.GetMod(modName) != null)
             {
                 info.SetProperties(true, type, damage, item);
@@ -95,38 +96,99 @@ namespace ElementalWeaponEnhancements
         }
 
         // Add element damage to shot projectile(s)
+        // See ElementalProjectile.cs
+        // Info in ElementalInfo.cs
         public override bool Shoot(Item item, Player player, ref Vector2 position, ref float speedX, ref float speedY, ref int type, ref int damage, ref float knockBack)
         {
-            ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
-            if (info.enhanced)
-            {
-                damage += info.GetRealDamage(player);
-            }
+            // Now done in ElementalProjectile.cs
+            //ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
+            //if (info.enhanced)
+            //{
+            //    damage += info.GetRealDamage(player);
+            //}
             return base.Shoot(item, player, ref position, ref speedX, ref speedY, ref type, ref damage, ref knockBack);
         }
 
-        // Add element damage to hits
+        // Custom modify hit npc behaviour
         // Todo: resistances
         public override void ModifyHitNPC(Item item, Player player, NPC target, ref int damage, ref float knockBack, ref bool crit)
         {
             ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
             if (info.enhanced)
             {
-                damage += info.GetRealDamage(player);
+                object[] returnObjects = null;
+
+                if (ElementalWeaponEnhancements.elementModifyHitNPC[info.elementalType] != null)
+                    returnObjects = ElementalWeaponEnhancements.elementModifyHitNPC[info.elementalType].Invoke(item, player, target, damage, knockBack, crit);
+
+
+                if (returnObjects == null || returnObjects.Length == 0 || !((bool)returnObjects[6]))
+                    damage += info.GetRealDamage(player);
+
+                if (returnObjects != null)
+                {
+                    item = (Item)returnObjects[0];
+                    player = (Player)returnObjects[1];
+                    target = (NPC)returnObjects[2];
+                    damage = (int)returnObjects[3];
+                    knockBack = (float)returnObjects[4];
+                    crit = (bool)returnObjects[5];
+                }
             }
             base.ModifyHitNPC(item, player, target, ref damage, ref knockBack, ref crit);
         }
 
-        // Add element damage to hits in PvP
+        // Custom modify hit pvp behaviour
         // Todo: resistances
         public override void ModifyHitPvp(Item item, Player player, Player target, ref int damage, ref bool crit)
         {
             ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
+            
             if (info.enhanced)
             {
-                damage += info.GetRealDamage(player);
+                object[] returnObjects = null;
+
+                if (ElementalWeaponEnhancements.elementModifyHitPVP[info.elementalType] != null)
+                    returnObjects = ElementalWeaponEnhancements.elementModifyHitPVP[info.elementalType].Invoke(item, player, target, damage, crit);
+
+
+                if (returnObjects == null || returnObjects.Length == 0 || !((bool)returnObjects[5]))
+                    damage += info.GetRealDamage(player);
+
+                if (returnObjects != null)
+                {
+                    item = (Item)returnObjects[0];
+                    player = (Player)returnObjects[1];
+                    target = (Player)returnObjects[2];
+                    damage = (int)returnObjects[3];
+                    crit = (bool)returnObjects[4];
+                }
             }
             base.ModifyHitPvp(item, player, target, ref damage, ref crit);
+        }
+
+        // Custom on hit npc behaviour
+        public override void OnHitNPC(Item item, Player player, NPC target, int damage, float knockBack, bool crit)
+        {
+            ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
+            if (info.enhanced)
+            {
+                if (ElementalWeaponEnhancements.elementOnHitNPC[info.elementalType] != null)
+                    ElementalWeaponEnhancements.elementOnHitNPC[info.elementalType].Invoke(item, player, target, damage, knockBack, crit);
+            }
+            base.OnHitNPC(item, player, target, damage, knockBack, crit);
+        }
+
+        // Custom on hit pvp behaviour
+        public override void OnHitPvp(Item item, Player player, Player target, int damage, bool crit)
+        {
+            ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
+            if (info.enhanced)
+            {
+                if (ElementalWeaponEnhancements.elementOnHitPVP[info.elementalType] != null)
+                    ElementalWeaponEnhancements.elementOnHitPVP[info.elementalType].Invoke(item, player, target, damage, crit);
+            }
+            base.OnHitPvp(item, player, target, damage, crit);
         }
     }
 }

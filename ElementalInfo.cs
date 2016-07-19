@@ -11,6 +11,16 @@ using Microsoft.Xna.Framework;
 
 namespace ElementalWeaponEnhancements
 {
+    // undocumented
+    class ElementalProjectileInfo : ProjectileInfo
+    {
+        public int num { get; set; }
+        public bool enhanced { get; set; }
+        public int elementalType { get; set; }
+        public Projectile elementalProjectile { get; set; }
+        public Item sourceItem { get; set; }
+    }
+
     class ElementalInfo : ItemInfo
     {
         // Elemental Variables
@@ -30,6 +40,7 @@ namespace ElementalWeaponEnhancements
             justDropped = false;
         }
 
+        // Reset properties
         public void ResetProperties()
         {
             enhanced = false;
@@ -50,6 +61,7 @@ namespace ElementalWeaponEnhancements
             return (int)(Main.rand.Next((int)Math.Ceiling(refDamage * 0.10f), (int)Math.Ceiling(refDamage * 0.50f)));
         }
 
+        // Get a new damage value
         public void CalculateNewDamage()
         {
             elementalDamage = CalculateDamage(ref elementalItem.damage);

@@ -66,6 +66,7 @@
     <Compile Include="ElementalItem.cs" />
     <Compile Include="ElementalNPC.cs" />
     <Compile Include="ElementalPlayer.cs" />
+    <Compile Include="ElementalProjectile.cs" />
     <Compile Include="ElementalWeaponEnhancements.cs" />
     <Compile Include="ElementalInfo.cs" />
     <Compile Include="Items\ChronicShifter.cs" />
