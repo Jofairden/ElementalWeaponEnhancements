@@ -17,12 +17,21 @@ namespace ElementalWeaponEnhancements
         // If an item is enhanced, create the custom tooltip and insert it below the vanilla damage.
         public override void ModifyTooltips(Item item, List<TooltipLine> tooltips)
         {
-            ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
-            if (info.enhanced)
+            try
             {
-                TooltipLine tip = new TooltipLine(mod, "EWE:Tooltip", info.GetRealDamage(Main.player[Main.myPlayer]).ToString() + " " + ElementalWeaponEnhancements.elementData[info.elementalType].Item2.ToString() + " Damage");
-                tip.overrideColor = ElementalWeaponEnhancements.elementData[info.elementalType].Item4;
-                tooltips.Insert(2, tip);
+                ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
+                if (info.enhanced)
+                {
+                    string useName = (ElementalFramework.Data.elementDisplayName[info.elementalType] != null) ? ElementalFramework.Data.elementDisplayName[info.elementalType] : ElementalFramework.Data.elementData[info.elementalType].Item2;
+
+                    TooltipLine tip = new TooltipLine(mod, "EWE:Tooltip", info.GetRealDamage(Main.player[Main.myPlayer]).ToString() + " " + useName + " Damage");
+                    tip.overrideColor = ElementalFramework.Data.elementData[info.elementalType].Item4;
+                    tooltips.Insert(2, tip);
+                }
+            }
+            catch (Exception e)
+            {
+                ErrorLogger.Log(e.ToString());
             }
         }
 
@@ -36,39 +45,68 @@ namespace ElementalWeaponEnhancements
         // Save the current type, and damage value.
         public override void SaveCustomData(Item item, BinaryWriter writer)
         {
-            ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
-            writer.Write(info.elementalType);
-            writer.Write(info.elementalDamage);
-            writer.Write(ElementalWeaponEnhancements.elementData[info.elementalType].Item1.Name);
+            try
+            {
+                ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
+                writer.Write(info.elementalType);
+                writer.Write(info.elementalDamage);
+                writer.Write(ElementalFramework.Data.elementData[info.elementalType].Item1.Name);
+            }
+            catch (Exception e)
+            {
+                ErrorLogger.Log(e.ToString());
+            }
         }
 
         // Only runs if data was saved in the first place. Set our properties to our saved values.
         public override void LoadCustomData(Item item, BinaryReader reader)
         {
-            ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
-            int type = reader.ReadInt32();
-            int damage = reader.ReadInt32();
-            string modName = reader.ReadString();
-            // If the mod that added the element is null, reset the element
-            if (ModLoader.GetMod(modName) != null)
+            try
             {
-                info.SetProperties(true, type, damage, item);
+                ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
+                int type = reader.ReadInt32();
+                int damage = reader.ReadInt32();
+                string modName = reader.ReadString();
+                // If the mod that added the element is null, reset the element
+                if (ModLoader.GetMod(modName) != null)
+                {
+                    info.SetProperties(true, type, damage, item);
+                }
+                else
+                {
+                    info.ResetProperties();
+                    //RunElementSelection(item, 1.0, true);
+                }
             }
-            else
+            catch (Exception e)
             {
-                info.ResetProperties();
-                RunElementSelection(item, 1.0, true);
+                ErrorLogger.Log(e.ToString());
             }
         }
 
         // ElementRunner, this code determines if you get an element or not.
-        private void RunElementSelection(Item item, double chance = 1.0, bool ignoreCheck = false)
+        private void RunElementSelection(Item item, double chance = 1.0, bool ignoreCheck = false, bool noCheck = false)
         {
             ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
             info.justDropped = false;
-            if (!info.enhanced && Tools.IsWeapon(item) && (ignoreCheck || Main.rand.NextDouble() <= chance))
+
+            if (noCheck || (!info.enhanced && Tools.IsWeapon(item) && (ignoreCheck || Main.rand.NextDouble() <= chance)))
             {
-                info.SetProperties(true, Main.rand.Next(0, ElementalWeaponEnhancements.elementData.Count), info.CalculateDamage(ref item.damage), item);
+                int element = info._CalculateElement(ElementalFramework.Data.elementData, Main.rand.Next(0, ElementalFramework.getTotalWeight()));
+                info.SetProperties(true, element, info.CalculateNewDamage(ref item.damage), item);
+            }
+        }
+
+        private void RunNewReforge(Item item, double chance = 1.0, bool ignoreCheck = false)
+        {
+            ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
+            if (!info.enhanced)
+            {
+                RunElementSelection(item, chance, true, false);
+            }
+            else if (info.enhanced && Tools.IsWeapon(item) && (ignoreCheck || Main.rand.NextDouble() <= chance))
+            {
+                RunElementSelection(item, chance, true, true);
             }
         }
 
@@ -91,7 +129,7 @@ namespace ElementalWeaponEnhancements
         // Have a chance to get an element when the item is reforged
         public override void PostReforge(Item item)
         {
-            RunElementSelection(item, 0.25);
+            RunNewReforge(item, 0.25);
             base.PostReforge(item);
         }
 
@@ -113,27 +151,38 @@ namespace ElementalWeaponEnhancements
         // Todo: resistances
         public override void ModifyHitNPC(Item item, Player player, NPC target, ref int damage, ref float knockBack, ref bool crit)
         {
-            ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
-            if (info.enhanced)
+            try
             {
-                object[] returnObjects = null;
-
-                if (ElementalWeaponEnhancements.elementModifyHitNPC[info.elementalType] != null)
-                    returnObjects = ElementalWeaponEnhancements.elementModifyHitNPC[info.elementalType].Invoke(item, player, target, damage, knockBack, crit);
-
-
-                if (returnObjects == null || returnObjects.Length == 0 || !((bool)returnObjects[6]))
-                    damage += info.GetRealDamage(player);
-
-                if (returnObjects != null)
+                ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
+                if (info.enhanced)
                 {
-                    item = (Item)returnObjects[0];
-                    player = (Player)returnObjects[1];
-                    target = (NPC)returnObjects[2];
-                    damage = (int)returnObjects[3];
-                    knockBack = (float)returnObjects[4];
-                    crit = (bool)returnObjects[5];
+                    bool addDamage = true;
+
+                    if (ElementalFramework.Data.elementModifyHit[info.elementalType].Item1 != null)
+                    {
+                        var returnObjects = ElementalFramework.Data.elementModifyHit[info.elementalType].Item1.Invoke(item, player, target, damage, knockBack, crit);
+
+                        if (((bool)returnObjects.Item7))
+                            addDamage = false;
+
+                        if (returnObjects != null)
+                        {
+                            item = (Item)returnObjects.Item1;
+                            player = (Player)returnObjects.Item2;
+                            target = (NPC)returnObjects.Item3;
+                            damage = (int)returnObjects.Item4;
+                            knockBack = (float)returnObjects.Item5;
+                            crit = (bool)returnObjects.Item6;
+                        }
+                    }
+
+                    if (addDamage)
+                        damage += info.GetRealDamage(player);
                 }
+            }
+            catch (Exception e)
+            {
+                ErrorLogger.Log(e.ToString());
             }
             base.ModifyHitNPC(item, player, target, ref damage, ref knockBack, ref crit);
         }
@@ -142,27 +191,37 @@ namespace ElementalWeaponEnhancements
         // Todo: resistances
         public override void ModifyHitPvp(Item item, Player player, Player target, ref int damage, ref bool crit)
         {
-            ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
-            
-            if (info.enhanced)
+            try
             {
-                object[] returnObjects = null;
-
-                if (ElementalWeaponEnhancements.elementModifyHitPVP[info.elementalType] != null)
-                    returnObjects = ElementalWeaponEnhancements.elementModifyHitPVP[info.elementalType].Invoke(item, player, target, damage, crit);
-
-
-                if (returnObjects == null || returnObjects.Length == 0 || !((bool)returnObjects[5]))
-                    damage += info.GetRealDamage(player);
-
-                if (returnObjects != null)
+                ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
+                if (info.enhanced)
                 {
-                    item = (Item)returnObjects[0];
-                    player = (Player)returnObjects[1];
-                    target = (Player)returnObjects[2];
-                    damage = (int)returnObjects[3];
-                    crit = (bool)returnObjects[4];
+                    bool addDamage = true;
+
+                    if (ElementalFramework.Data.elementModifyHit[info.elementalType].Item2 != null)
+                    {
+                        var returnObjects = ElementalFramework.Data.elementModifyHit[info.elementalType].Item2.Invoke(item, player, target, damage, crit);
+
+                        if (!((bool)returnObjects.Item6))
+                            addDamage = false;
+
+                        if (returnObjects != null)
+                        {
+                            item = (Item)returnObjects.Item1;
+                            player = (Player)returnObjects.Item2;
+                            target = (Player)returnObjects.Item3;
+                            damage = (int)returnObjects.Item4;
+                            crit = (bool)returnObjects.Item5;
+                        }
+                    }
+
+                    if (addDamage)
+                        damage += info.GetRealDamage(player);
                 }
+            }
+            catch (Exception e)
+            {
+                ErrorLogger.Log(e.ToString());
             }
             base.ModifyHitPvp(item, player, target, ref damage, ref crit);
         }
@@ -170,11 +229,18 @@ namespace ElementalWeaponEnhancements
         // Custom on hit npc behaviour
         public override void OnHitNPC(Item item, Player player, NPC target, int damage, float knockBack, bool crit)
         {
-            ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
-            if (info.enhanced)
+            try
             {
-                if (ElementalWeaponEnhancements.elementOnHitNPC[info.elementalType] != null)
-                    ElementalWeaponEnhancements.elementOnHitNPC[info.elementalType].Invoke(item, player, target, damage, knockBack, crit);
+                ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
+                if (info.enhanced)
+                {
+                    if (ElementalFramework.Data.elementOnHit[info.elementalType].Item1 != null)
+                        ElementalFramework.Data.elementOnHit[info.elementalType].Item1.Invoke(item, player, target, damage, knockBack, crit);
+                }
+            }
+            catch (Exception e)
+            {
+                ErrorLogger.Log(e.ToString());
             }
             base.OnHitNPC(item, player, target, damage, knockBack, crit);
         }
@@ -182,11 +248,18 @@ namespace ElementalWeaponEnhancements
         // Custom on hit pvp behaviour
         public override void OnHitPvp(Item item, Player player, Player target, int damage, bool crit)
         {
-            ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
-            if (info.enhanced)
+            try
             {
-                if (ElementalWeaponEnhancements.elementOnHitPVP[info.elementalType] != null)
-                    ElementalWeaponEnhancements.elementOnHitPVP[info.elementalType].Invoke(item, player, target, damage, crit);
+                ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
+                if (info.enhanced)
+                {
+                    if (ElementalFramework.Data.elementOnHit[info.elementalType].Item2 != null)
+                        ElementalFramework.Data.elementOnHit[info.elementalType].Item2.Invoke(item, player, target, damage, crit);
+                }
+            }
+            catch (Exception e)
+            {
+                ErrorLogger.Log(e.ToString());
             }
             base.OnHitPvp(item, player, target, damage, crit);
         }

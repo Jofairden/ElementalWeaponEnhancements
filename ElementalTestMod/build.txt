@@ -1,3 +1,0 @@
-modReferences=ElementalWeaponEnhancements
-buildIgnore = *.csproj, *.user, obj\*, bin\*, .vs\*, .git\*, Properties\*, *.sln, *.csproj, LICENSE, .gitignore
-includePDB = true

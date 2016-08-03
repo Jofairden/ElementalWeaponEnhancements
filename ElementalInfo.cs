@@ -31,7 +31,7 @@ namespace ElementalWeaponEnhancements
         public Item elementalItem { get; private set; }
 
         // Set elemental properties
-        public void SetProperties(bool enabled, int type, int damage, Item item)
+        internal void SetProperties(bool enabled, int type, int damage, Item item)
         {
             enhanced = enabled;
             elementalType = type;
@@ -41,7 +41,7 @@ namespace ElementalWeaponEnhancements
         }
 
         // Reset properties
-        public void ResetProperties()
+        internal void ResetProperties()
         {
             enhanced = false;
             elementalType = 0;
@@ -52,36 +52,64 @@ namespace ElementalWeaponEnhancements
         // Get a real damage value, calculated with a player's elemental modifier
         public int GetRealDamage(Player player)
         {
-            return (int)Math.Ceiling((elementalDamage * player.GetModPlayer<ElementalPlayer>(mod).elementDamage[elementalType]));
+            return (int)Math.Ceiling(((double)elementalDamage  * player.GetModPlayer<ElementalPlayer>(mod).elementDamage[elementalType]));
         }
 
         // Calculate a damage value
-        public int CalculateDamage(ref int refDamage)
+        internal int CalculateDamage(ref int refDamage)
         {
             return (int)(Main.rand.Next((int)Math.Ceiling(refDamage * 0.10f), (int)Math.Ceiling(refDamage * 0.50f)));
         }
 
         // Get a new damage value
-        public void CalculateNewDamage()
+        internal int CalculateNewDamage(ref int refDamage)
         {
-            elementalDamage = CalculateDamage(ref elementalItem.damage);
+            int _damage = (refDamage == -1) ? elementalItem.damage : refDamage;
+            return (ElementalFramework.Data.elementCalculateDamage[elementalType] != null) ? ElementalFramework.Data.elementCalculateDamage[elementalType].Invoke(_damage) : CalculateDamage(ref _damage);
         }
 
         // Calculate a new element. The element can not be the element it was prior to changing it.
         public void CalculateNewElement()
         {
-            var elementList = ElementalWeaponEnhancements.elementData.ToList();
-            elementList.Remove(ElementalWeaponEnhancements.elementData[elementalType]);
+            var elementList = ElementalFramework.Data.elementData.ToList();
+            elementList.Remove(ElementalFramework.Data.elementData[elementalType]);
             if (elementList.Any())
             {
-                int random = Main.rand.Next(0, (int)elementList.Count);
+                int _weight = Main.rand.Next(0, ElementalFramework.getTotalWeight());
+                int _selected = _CalculateElement(elementList, _weight);
+                /*int random = Main.rand.Next(0, (int)elementList.Count);
                 //The zero-based index of the first occurrence of item within the entire List<T>, if found; otherwise, –1.
-                int newElement = ElementalWeaponEnhancements.elementData.FindIndex(x => x.Item3 == elementList[random].Item3);
+                int newElement = ElementalFramework.Data.elementData.FindIndex(x => x.Item3 == elementList[random].Item3);
                 if (newElement != -1)
                 {
                     elementalType = newElement;
+                }*/
+
+                if (_selected != -1)
+                {
+                    elementalType = _selected;
                 }
             }
+        }
+
+        // Get element by weight
+        internal int _CalculateElement(List<Tuple<Mod, string, string, Color>> _data, int _weight)
+        {
+            int _selected = -1;
+            foreach (var item in _data)
+            {
+                int _thisWeight = ElementalFramework.Data.elementWeight[ElementalFramework.GetElement(item.Item1, item.Item2)];
+
+                if (_weight < _thisWeight)
+                {
+                    _selected = ElementalFramework.Data.elementData.FindIndex(x => x.Item3 == item.Item3);
+                    break;
+                }
+
+                _weight = _weight - _thisWeight;
+            }
+
+            return _selected;
         }
     }
 }

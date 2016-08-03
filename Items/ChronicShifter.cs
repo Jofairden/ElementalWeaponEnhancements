@@ -37,9 +37,9 @@ namespace ElementalWeaponEnhancements.Items
             {
                 ElementalInfo info = player.inventory[0].GetModInfo<ElementalInfo>(mod);
 
-                if (info.enhanced)
+                if (info.enhanced && info.elementalItem != null)
                 {
-                    info.CalculateNewDamage();
+                    info.SetProperties(true, info.elementalType, info.CalculateNewDamage(ref info.elementalItem.damage), info.elementalItem);
                 }
             }
         }

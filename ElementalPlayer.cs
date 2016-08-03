@@ -17,7 +17,19 @@ namespace ElementalWeaponEnhancements
         // Copy element modifiers
         public override void Initialize()
         {
-            elementDamage = new List<float>(ElementalWeaponEnhancements.elementModifiers);
+            try
+            {
+                elementDamage = new List<float>();
+                for (int i = 0; i < ElementalFramework.Data.elementData.Count; i++)
+                {
+                    elementDamage.Add(1f);
+                }
+                //ErrorLogger.Log("SIZE: " + elementDamage.ToString());
+            }
+            catch (Exception e)
+            {
+                ErrorLogger.Log(e.ToString());
+            }
         }
         
         // Reset modifiers to default

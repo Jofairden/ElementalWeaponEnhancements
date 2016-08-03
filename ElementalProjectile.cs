@@ -44,11 +44,18 @@ namespace ElementalWeaponEnhancements
         // Custom OnHitNPC
         public override void OnHitNPC(Projectile projectile, NPC target, int damage, float knockback, bool crit)
         {
-            ElementalProjectileInfo info = projectile.GetModInfo<ElementalProjectileInfo>(mod);
-            if (info.enhanced)
+            try
             {
-                if (ElementalWeaponEnhancements.elementProjectileOnHitNPC[info.elementalType] != null)
-                    ElementalWeaponEnhancements.elementProjectileOnHitNPC[info.elementalType].Invoke(projectile, target, damage, knockback, crit);
+                ElementalProjectileInfo info = projectile.GetModInfo<ElementalProjectileInfo>(mod);
+                if (info.enhanced)
+                {
+                    if (ElementalFramework.Data.elementOnHit[info.elementalType].Item3 != null)
+                        ElementalFramework.Data.elementOnHit[info.elementalType].Item3.Invoke(projectile, target, damage, knockback, crit);
+                }
+            }
+            catch (Exception e)
+            {
+                ErrorLogger.Log(e.ToString());
             }
             base.OnHitNPC(projectile, target, damage, knockback, crit);
         }
@@ -56,11 +63,18 @@ namespace ElementalWeaponEnhancements
         // Custom OnHitPVP
         public override void OnHitPvp(Projectile projectile, Player target, int damage, bool crit)
         {
-            ElementalProjectileInfo info = projectile.GetModInfo<ElementalProjectileInfo>(mod);
-            if (info.enhanced)
+            try
             {
-                if (ElementalWeaponEnhancements.elementProjectileOnHitPVP[info.elementalType] != null)
-                    ElementalWeaponEnhancements.elementProjectileOnHitPVP[info.elementalType].Invoke(projectile, target, damage, crit);
+                ElementalProjectileInfo info = projectile.GetModInfo<ElementalProjectileInfo>(mod);
+                if (info.enhanced)
+                {
+                    if (ElementalFramework.Data.elementOnHit[info.elementalType].Item4 != null)
+                        ElementalFramework.Data.elementOnHit[info.elementalType].Item4.Invoke(projectile, target, damage, crit);
+                }
+            }
+            catch (Exception e)
+            {
+                ErrorLogger.Log(e.ToString());
             }
             base.OnHitPvp(projectile, target, damage, crit);
         }
@@ -68,25 +82,39 @@ namespace ElementalWeaponEnhancements
         // Custom ModifyHitNPC
         public override void ModifyHitNPC(Projectile projectile, NPC target, ref int damage, ref float knockback, ref bool crit)
         {
-            ElementalProjectileInfo info = projectile.GetModInfo<ElementalProjectileInfo>(mod);
-            if (info.enhanced)
+            try
             {
-                object[] returnObjects = null;
-
-                if (ElementalWeaponEnhancements.elementProjectileModifyHitNPC[info.elementalType] != null)
-                    returnObjects = ElementalWeaponEnhancements.elementProjectileModifyHitNPC[info.elementalType].Invoke(projectile, target, damage, knockback, crit);
-
-                if (returnObjects == null || returnObjects.Length == 0 || !((bool)returnObjects[5]))
-                    damage += info.sourceItem.GetModInfo<ElementalInfo>(mod).GetRealDamage(Main.player[info.sourceItem.owner]);
-
-                if (returnObjects != null)
+                ElementalProjectileInfo info = projectile.GetModInfo<ElementalProjectileInfo>(mod);
+                if (info.enhanced)
                 {
-                    projectile = (Projectile)returnObjects[0];
-                    target = (NPC)returnObjects[1];
-                    damage = (int)returnObjects[2];
-                    knockback = (float)returnObjects[3];
-                    crit = (bool)returnObjects[4];
+                    bool addDamage = true;
+
+                    if (ElementalFramework.Data.elementModifyHit[info.elementalType].Item3 != null)
+                    {
+                        var returnObjects = ElementalFramework.Data.elementModifyHit[info.elementalType].Item3.Invoke(projectile, target, damage, knockback, crit);
+
+                        if ((!(bool)returnObjects.Item6))
+                            addDamage = false;
+
+                        if (returnObjects != null)
+                        {
+                            projectile = (Projectile)returnObjects.Item1;
+                            target = (NPC)returnObjects.Item2;
+                            damage = (int)returnObjects.Item3;
+                            knockback = (float)returnObjects.Item4;
+                            crit = (bool)returnObjects.Item5;
+                        }
+                    }
+
+                    if (addDamage)
+                    {
+                        damage += info.sourceItem.GetModInfo<ElementalInfo>(mod).GetRealDamage(Main.player[info.sourceItem.owner]);
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                ErrorLogger.Log(e.ToString());
             }
             base.ModifyHitNPC(projectile, target, ref damage, ref knockback, ref crit);
         }
@@ -94,24 +122,38 @@ namespace ElementalWeaponEnhancements
         // Custom ModifyHitPVP
         public override void ModifyHitPvp(Projectile projectile, Player target, ref int damage, ref bool crit)
         {
-            ElementalProjectileInfo info = projectile.GetModInfo<ElementalProjectileInfo>(mod);
-            if (info.enhanced)
+            try
             {
-                object[] returnObjects = null;
-
-                if (ElementalWeaponEnhancements.elementProjectileModifyHitPVP[info.elementalType] != null)
-                    returnObjects = ElementalWeaponEnhancements.elementProjectileModifyHitPVP[info.elementalType].Invoke(projectile, target, damage, crit);
-
-                if (returnObjects == null || returnObjects.Length == 0 || !((bool)returnObjects[4]))
-                    damage += info.sourceItem.GetModInfo<ElementalInfo>(mod).GetRealDamage(Main.player[info.sourceItem.owner]);
-
-                if (returnObjects != null)
+                ElementalProjectileInfo info = projectile.GetModInfo<ElementalProjectileInfo>(mod);
+                if (info.enhanced)
                 {
-                    projectile = (Projectile)returnObjects[0];
-                    target = (Player)returnObjects[1];
-                    damage = (int)returnObjects[2];
-                    crit = (bool)returnObjects[3];
+                    bool addDamage = true;
+
+                    if (ElementalFramework.Data.elementModifyHit[info.elementalType].Item4 != null)
+                    {
+                        var returnObjects = ElementalFramework.Data.elementModifyHit[info.elementalType].Item4.Invoke(projectile, target, damage, crit);
+
+                        if ((!(bool)returnObjects.Item5))
+                            addDamage = false;
+
+                        if (returnObjects != null)
+                        {
+                            projectile = (Projectile)returnObjects.Item1;
+                            target = (Player)returnObjects.Item2;
+                            damage = (int)returnObjects.Item3;
+                            crit = (bool)returnObjects.Item5;
+                        }
+
+                        if (addDamage)
+                        {
+                            damage += info.sourceItem.GetModInfo<ElementalInfo>(mod).GetRealDamage(Main.player[info.sourceItem.owner]);
+                        }
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                ErrorLogger.Log(e.ToString());
             }
             base.ModifyHitPvp(projectile, target, ref damage, ref crit);
         }
