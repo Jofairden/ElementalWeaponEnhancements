@@ -115,7 +115,7 @@ namespace ElementalWeaponEnhancements
         {
             ElementalInfo info = item.GetModInfo<ElementalInfo>(mod);
             if (info.justDropped)
-                RunElementSelection(item);
+                RunElementSelection(item, 0.25);
             return base.OnPickup(item, player);
         }
 

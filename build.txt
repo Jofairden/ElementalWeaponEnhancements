@@ -1,6 +1,6 @@
 author = gorateron
-version = 0.0.5
-homepage = http://forums.terraria.org/index.php?threads/elemental-weapon-enhancements.46677/
+version = 0.0.5.1
+homepage = http://forums.terraria.org/index.php?threads/elemental-weapon-enhancements.46677/#post-1036840
 displayName = Elemental Weapon Enhancements
 hideCode = false
 hideResources = false
