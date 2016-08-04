@@ -1,6 +1,6 @@
 # ElementalWeaponEnhancements
-Rev 1.
-Version: 0.0.4
+Rev 2.
+Version: 0.0.5.1
 Mod team: Gorateron
 
 ## WIKI
