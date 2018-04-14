@@ -1,3 +1,5 @@
+# NOTE! OUTDATED MOD, SEE EVEN MORE MODIFIERS INSTEAD: https://github.com/Jofairden/EvenMoreModifiers
+
 # ElementalWeaponEnhancements
 Rev 2.
 Version: 0.0.5.1
